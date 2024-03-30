@@ -1,0 +1,69 @@
+image:
+ name: hashicorp/terraform:latest
+ entrypoint: [""]
+
+variables:
+ AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+ AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+before_script:
+ - apk update --repository=http://dl-cdn.alpinelinux.org/alpine/v3.13/main
+ - apk add aws-cli
+ - apk add bash
+ - apk add npm
+ - export PATH="/usr/local/bin:$PATH"
+
+stages:
+  - validate
+  - test
+  - plan
+  - apply
+  - destroy
+ 
+
+validate:
+ stage: validate
+ script:
+  - terraform init -backend=false
+  - terraform validate
+  - aws sts get-caller-identity
+
+
+test:
+ stage: test
+ script:
+  - ls ${CI_PROJECT_DIR}/lamda
+  - npm install --save-dev aws-sdk
+  - npm test ${CI_PROJECT_DIR}/lamda
+
+plan:
+ stage: plan
+ script:
+  - terraform init
+  - terraform plan
+ dependencies:
+  - validate
+
+apply:
+ stage: apply
+ script:
+  - terraform init
+  - terraform apply -auto-approve
+  - terraform apply -auto-approve
+ artifacts:
+  paths:
+   - terraform/terraform.tfstate
+ only:
+  - main
+
+destroy:
+ stage: destroy
+ script:
+  - terraform init
+  - terraform destroy -auto-approve
+ dependencies:
+  - apply
+  - plan
+ when: manual
+
+

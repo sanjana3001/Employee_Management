@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="app.mjs" type="module"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #user {
+            margin: 20px;
+        }
+
+        #loginButton {
+            float: right;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="loginButton" class="btn btn-primary">Login</button>
+    <div id="user">
+        Checking user...
+    </div>
+
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <style>
+            /* Custom styles for smaller input width and left-aligned form */
+            h1 {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background-color: #f8f9fa;
+                color: #007bff;
+                /* Bootstrap default background color */
+            }
+
+            h2 {
+                color: #007bff;
+                margin: 20px;
+            }
+
+            #addEmployeeForm {
+                max-width: 400px;
+                margin: 0;
+            }
+
+            .thead-custom {
+                background-color: #007bff;
+                color: #fff;
+                /* Set text color to white for better visibility */
+            }
+        </style>
+        <h1>Employee Management</h1>
+    </head>
+
+    <body class="container">
+        <!-- Form for adding a new employee -->
+        <h2>Add New Employee</h2>
+        <form id="addEmployeeForm">
+            <label for="id">ID:</label>
+            <input type="text" id="id" name="id" class="form-control" required>
+            <br>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+            <br>
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" class="form-control" required>
+            <br>
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" class="form-control" required>
+            <br>
+            <label for="position">Position:</label>
+            <input type="text" id="position" name="position" class="form-control" required>
+            <br>
+            <label for="department">Department:</label>
+            <input type="text" id="department" name="department" class="form-control" required>
+            <br>
+            <label for="phoneNumber">Phone Number:</label>
+            <input type="tel" id="phoneNumber" name="phoneNumber" class="form-control" required>
+            <br>
+            <label for="convicted">Convicted:</label>
+            <input type="checkbox" id="convicted" name="convicted">
+            <br>
+            <button type="button" class="btn btn-primary" onclick="addEmployee()">Add Employee</button>
+        </form>
+
+        <!-- Table for displaying employee records -->
+        <h2>All Employee Data</h2>
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Address</th>
+                    <th>Position</th>
+                    <th>Department</th>
+                    <th>Phone Number</th>
+                    <th>Convicted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="employeesTableBody"></tbody>
+        </table>
+
+        <!-- Add Bootstrap JS and Popper.js (if needed) -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </body>
+    <script>
+        let apiUrl;
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch the JSON file
+            fetch('api_url.json')
+                .then(response => response.json())
+                .then(data => {
+                    // Access the API URL from the JSON data
+                    apiUrl = data.api_url;
+                    setTimeout(() => {
+                        console.log('API base URL from script in html:', apiUrl);
+                    }, 1000);
+                    //Debug Test for apiUrl value 
+                    console.log('API base URL stored in variable in html script 1:', `${apiUrl}`);
+                    ;
+                })
+                .catch(error => console.error('Error fetching JSON:', error));
+        });
+
+        //Debug Test for apiUrl value 
+        setTimeout(() => {
+            console.log('API base URL from HTMLweds:', apiUrl);
+        }, 1000);
+
+
+        async function addEmployee() {
+            const id = document.getElementById('id').value;
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+            const address = document.getElementById('address').value;
+            const position = document.getElementById('position').value;
+            const department = document.getElementById('department').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const convicted = document.getElementById('convicted').checked;
+
+            // Construct the request body
+            const requestData = {
+                ID: id,
+                Name: name,
+                Age: parseInt(age),
+                Address: address,
+                Position: position,
+                Department: department,
+                PhoneNumber: phoneNumber,
+                Convicted: convicted ? 'Yes' : 'No'
+            };
+            console.log('convicted:', convicted);
+            console.log('requestData:', requestData);
+
+            try {
+                console.log(apiUrl);//Debug Test for apiUrl value 
+                const response = await fetch(`${apiUrl}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([requestData]),
+                });
+
+                if (response.ok) {
+                    alert('Employee added successfully!');
+                    fetchAndDisplayEmployees();
+                } else {
+                    const errorText = await response.text();
+                    alert(`Error: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error adding employee:', error);
+            }
+        }
+
+        async function fetchAndDisplayEmployees() {
+            try {
+                console.log(apiUrl);//Debug Test for apiUrl value 
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const employees = await response.json();
+                    displayEmployees(employees);
+                } else {
+                    const errorText = await response.text();
+                    alert(`Error fetching employee records: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error fetching employee records:', error);
+            }
+        }
+
+        function displayEmployees(employees) {
+            const tableBody = document.getElementById('employeesTableBody');
+            tableBody.innerHTML = '';
+
+            employees.forEach((employee) => {
+                const row = document.createElement('tr');
+                console.log('Employee Convicted Value:', employee.Convicted);
+                row.innerHTML = `
+                    <td>${employee.ID}</td>
+                    <td>${employee.Name}</td>
+                    <td>${employee.Age}</td>
+                    <td>${employee.Address}</td>
+                    <td>${employee.Position}</td>
+                    <td>${employee.Department}</td>
+                    <td>${employee.PhoneNumber}</td>
+                    <td>${employee.Convicted}</td>
+                    <td><button onclick="deleteEmployee('${employee.ID}')">Delete</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function deleteEmployee(ID) {
+            try {
+                console.log(apiUrl);//Debug Test for apiUrl value 
+                const response = await fetch(`${apiUrl}?ID=${ID}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    alert('Employee deleted successfully!');
+                    fetchAndDisplayEmployees();
+                } else {
+                    const errorText = await response.text();
+                    alert(`Error deleting employee: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error deleting employee:', error);
+            }
+        }
+
+        // Call the function to load employee records when the page loads
+        setTimeout(() => {
+            fetchAndDisplayEmployees();
+        }, 1000);
+
+
+    </script>
+
+</body>
+
+</html>
