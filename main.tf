@@ -12,8 +12,8 @@ terraform {
 provider aws {
   region = var.region
   //for devlopers if needed 
-  access_key = "AKIAWUZ7YMDRMVDQCDND"
-  secret_key = "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"
+  //access_key = ""
+  //secret_key = ""
 
 
 }
